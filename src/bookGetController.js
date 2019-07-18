@@ -10,7 +10,7 @@ const bookGetController = {
         try {
             const result = await bookModel.find(params);
             return {success: true, return: result};
-         catch (e) {
+        } catch (e) {
             return {success: false, return: {error: 'UNKNOWN_EXCEPTION'}};
         }
     }

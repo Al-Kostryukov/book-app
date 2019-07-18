@@ -91,10 +91,11 @@ describe("App REST test", () => {
                 .request(server)
                 .post("/modify")
                 .field({
-                    title: 'Idiot',
-                    author: 'Fedor Dostoevsky',
-                    description: 'Description of the book',
-                    date: '1869-01-01'
+                    bookId: 2,
+                    title: 'Idiot - upd',
+                    author: 'Fedor Dostoevsky- upd',
+                    description: 'Description of the book - upd',
+                    date: '2069-01-01'
                 })
                 .end((err, res) => {
                     expect(err).to.be.null;

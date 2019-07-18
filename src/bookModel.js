@@ -90,7 +90,7 @@ const bookModel = {
                 (params.title ? ('title =' + dbConnection.escape(params.title) + ',') : '') +
                 (params.date ? ('date =' + dbConnection.escape(params.date) + ',') : '') +
                 (authorId ? ('author_id =' + authorId + ',') : '') +
-                (params.description ? ('description =' + dbConnection.escape(params.description) + ',') : '') +
+                (params.description ? ('description =' + dbConnection.escape(params.description)) : '') +
                 'WHERE book_id = ' + dbConnection.escape(params.bookId);
 
             await dbConnection.query(sqlQuery);
