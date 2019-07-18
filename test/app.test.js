@@ -63,7 +63,7 @@ describe("App REST test", () => {
     });
 
     describe("Add book", () => {
-        it("Add book simple", done => {
+        it("Add book", done => {
             chai
                 .request(server)
                 .post("/add")
@@ -79,6 +79,28 @@ describe("App REST test", () => {
                     expect(res).to.have.status(200);
                     const resJson = JSON.parse(res.text);
                     expect(resJson).to.be.an('object').that.has.all.keys('return', 'success');
+                    expect(resJson.success).to.be.equal(true);
+                    done();
+                });
+        });
+    });
+
+    describe("Modify book", () => {
+        it("Modify book simple", done => {
+            chai
+                .request(server)
+                .post("/modify")
+                .field({
+                    title: 'Idiot',
+                    author: 'Fedor Dostoevsky',
+                    description: 'Description of the book',
+                    date: '1869-01-01'
+                })
+                .end((err, res) => {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    const resJson = JSON.parse(res.text);
+                    expect(resJson).to.be.an('object').that.has.all.keys('return');
                     expect(resJson.success).to.be.equal(true);
                     done();
                 });

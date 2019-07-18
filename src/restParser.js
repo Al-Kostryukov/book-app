@@ -1,3 +1,5 @@
+const config = require('./config');
+
 class RESTParser {
     constructor(fields) {
         this.fields = new Set(fields);
@@ -27,11 +29,19 @@ class RESTParser {
     }
 
     parseFilters(query) {
-        return {};
+        const filters = {};
+        for (let field of this.fields) {
+            filters[field] = query[field] || null
+        }
+
+        return filters;
     }
 
     parsePagination(query) {
-        return {};
+        return {
+            offset: query.offset || config.defaultOffset,
+            limit: query.limit || config.defaultLimit
+        };
     }
 }
 

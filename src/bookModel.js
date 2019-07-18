@@ -39,11 +39,69 @@ const bookModel = {
             throw new Error('transaction failed');
         }
     },
-    find: async function() {
-        await dbConnection.query('SELECT * FROM books');
-    },
-    modify: function() {
+    find: async function(params) {
+        let orderBy = '', limit = '',offset = '', where = '';
+        if (params.sort.length) {
+            orderBy = 'ORDER BY ';
+            params.sort.forEach(column => {
+                orderBy += column[0] + ' ' + column[1] + ' ';
+            });
+        }
 
+        if (params.pagination.offset) {
+            offset = 'OFFSET ' + dbConnection.escape(params.pagination.offset);
+        }
+
+        if (params.pagination.limit) {
+            limit = 'LIMIT ' + dbConnection.escape(params.pagination.limit);;
+        }
+
+        if (params.filters) {
+            for (let column in params.filters) {
+                where += column + ' LIKE %' + dbConnection.escape(params.filters[column]) + '% ';
+            }
+        }
+
+        const sqlQuery = 'SELECT * FROM ((Books INNER JOIN Authors ON Books.author_id = Authors.author_id) INNER JOIN Images ON Books.image_id = Images.image_id) ' +
+            where + orderBy + limit + offset;
+
+        await dbConnection.query(sqlQuery);
+    },
+    modify: async function(params) {
+        let authorId;
+        if (params.author) {
+            const authorSelectResult = await dbConnection.query('SELECT author_id FROM Authors WHERE name = "' + dbConnection.escape(params.author) + '"');
+            if (authorSelectResult.length > 1) {
+                throw new Error('Multiple authors with same name - possible case (Tolstoy as example) - logic not implemented for such case');
+            } else if (authorSelectResult.length) {
+                authorId = authorSelectResult[0].author_id;
+            }
+        }
+
+        await dbConnection.beginTransaction();
+
+        if (!authorId && params.author) {
+            const authorInsertResult = await dbConnection.query('INSERT INTO Authors (name) VALUES ("' + dbConnection.escape(params.author) + '")');
+            authorId = authorInsertResult.insertId;
+        }
+
+        if (params.title || params.date || authorId || params.description) {
+            const sqlQuery = 'UPDATE Books SET '+
+                (params.title ? ('title =' + dbConnection.escape(params.title) + ',') : '') +
+                (params.date ? ('date =' + dbConnection.escape(params.date) + ',') : '') +
+                (authorId ? ('author_id =' + authorId + ',') : '') +
+                (params.description ? ('description =' + dbConnection.escape(params.description) + ',') : '') +
+                'WHERE book_id = ' + dbConnection.escape(params.bookId);
+
+            await dbConnection.query(sqlQuery);
+        }
+
+        try {
+            await dbConnection.commit();
+        } catch(e) {
+            await dbConnection.rollback();
+            throw new Error('transaction failed');
+        }
     }
 };
 

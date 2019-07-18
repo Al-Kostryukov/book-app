@@ -7,6 +7,7 @@ const bookModifyController = require('./bookModifyController');
 
 router
     .get('/books', async (ctx, next) => {
+        // here we can cache request using Redis (for example) - can implement it later
         ctx.body = await bookGetController.getBooks(ctx.query);
     })
     .post('/add', async (ctx, next) => {
