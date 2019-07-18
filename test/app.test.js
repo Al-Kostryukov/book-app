@@ -49,7 +49,7 @@ describe("App REST test", () => {
         it("should get books", done => {
             chai
                 .request(server)
-                .get("/books?title=Idiot&author=Dostoevsky")
+                .get("/books?title=Idiot&author=Dostoevsk&sort=-date&offset=1&limit=2")
                 .end((err, res) => {
                     expect(err).to.be.null;
                     expect(res).to.have.status(200);
@@ -101,7 +101,7 @@ describe("App REST test", () => {
                     expect(err).to.be.null;
                     expect(res).to.have.status(200);
                     const resJson = JSON.parse(res.text);
-                    expect(resJson).to.be.an('object').that.has.all.keys('return');
+                    expect(resJson).to.be.an('object').that.has.all.keys('success');
                     expect(resJson.success).to.be.equal(true);
                     done();
                 });

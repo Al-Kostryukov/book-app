@@ -8,8 +8,16 @@ const bookGetController = {
         const params = parser.parse(query);
 
         try {
-            const result = await bookModel.find(params);
-            return {success: true, return: result};
+            const results = await bookModel.find(params);
+            const processedResults = results.map(result => ({
+                bookId: result.book_id,
+                title: result.title,
+                author: result.name,
+                date: result.date,
+                description: result.description,
+                image: result.path
+            }));
+            return {success: true, return: processedResults};
         } catch (e) {
             return {success: false, return: {error: 'UNKNOWN_EXCEPTION'}};
         }

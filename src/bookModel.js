@@ -44,7 +44,13 @@ const bookModel = {
         if (params.sort.length) {
             orderBy = 'ORDER BY ';
             params.sort.forEach(column => {
-                orderBy += column[0] + ' ' + column[1] + ' ';
+                let columnFullName;
+                if (column.field === 'author') {
+                    columnFullName = 'Authors.name';
+                } else {
+                    columnFullName = 'Books.' + column.field;
+                }
+                orderBy += columnFullName + ' ' + column.order + ' ';
             });
         }
 
@@ -53,19 +59,30 @@ const bookModel = {
         }
 
         if (params.pagination.limit) {
-            limit = 'LIMIT ' + dbConnection.escape(params.pagination.limit);;
+            limit = 'LIMIT ' + dbConnection.escape(params.pagination.limit) + ' ';
         }
 
-        if (params.filters) {
+        if (Object.keys(params.filters).length) {
+            where = 'WHERE ';
+            let isFirst = true;
             for (let column in params.filters) {
-                where += column + ' LIKE %' + dbConnection.escape(params.filters[column]) + '% ';
+                if (params.filters.hasOwnProperty(column) && params.filters[column]) {
+                    let columnFullName = isFirst ? '' : 'AND ';
+                    if (column === 'author') {
+                        columnFullName += 'Authors.name';
+                    } else {
+                        columnFullName += 'Books.' + column;
+                    }
+                    where += columnFullName + ' LIKE ' + dbConnection.escape('%' + params.filters[column] + '%') + ' ';
+                    isFirst = false;
+                }
             }
         }
 
-        const sqlQuery = 'SELECT * FROM ((Books INNER JOIN Authors ON Books.author_id = Authors.author_id) INNER JOIN Images ON Books.image_id = Images.image_id) ' +
+        const sqlQuery = 'SELECT * FROM ((Books LEFT JOIN Authors ON Books.author_id = Authors.author_id) LEFT JOIN Images ON Books.image_id = Images.image_id) ' +
             where + orderBy + limit + offset;
 
-        await dbConnection.query(sqlQuery);
+        return await dbConnection.query(sqlQuery);
     },
     modify: async function(params) {
         let authorId;

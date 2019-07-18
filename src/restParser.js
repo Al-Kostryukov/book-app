@@ -31,7 +31,9 @@ class RESTParser {
     parseFilters(query) {
         const filters = {};
         for (let field of this.fields) {
-            filters[field] = query[field] || null
+            if (query[field]) {
+                filters[field] = query[field]
+            }
         }
 
         return filters;
@@ -39,8 +41,8 @@ class RESTParser {
 
     parsePagination(query) {
         return {
-            offset: query.offset || config.defaultOffset,
-            limit: query.limit || config.defaultLimit
+            offset: parseInt(query.offset) || config.defaultOffset,
+            limit: parseInt(query.limit) || config.defaultLimit
         };
     }
 }
