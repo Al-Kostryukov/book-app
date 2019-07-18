@@ -1,12 +1,11 @@
-const mysql      = require('mysql');
+const mysql = require('mysql');
 const {promisify} = require('util');
-const connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'me',
-    password : 'secret',
-    database : 'my_db'
-});
+const config = require('./config');
+const connection = mysql.createConnection(config.mysql);
 
 connection.query = promisify(connection.query);
+connection.beginTransaction = promisify(connection.beginTransaction);
+connection.commit = promisify(connection.commit);
+connection.rollback = promisify(connection.rollback);
 
 module.exports = connection;
