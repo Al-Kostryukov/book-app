@@ -1,6 +1,7 @@
 const fs = require("fs");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const fsExtra = require('fs-extra');
 const { server, dbConnection } = require("../src/app");
 const expect = chai.expect;
 
@@ -9,10 +10,27 @@ describe("App REST test", () => {
     after(() => {
         server.close();
         dbConnection.end();
+        fsExtra.emptyDirSync(__dirname + '/../uploads/');
+        fsExtra.createFile(__dirname + '/../uploads/.githere');
     });
 
     describe("Get books simple", () => {
         it("should get books", done => {
+            chai
+                .request(server)
+                .get("/books")
+                .end((err, res) => {
+                    expect(err).to.be.null;
+                    expect(res).to.have.status(200);
+                    const resJson = JSON.parse(res.text);
+                    expect(resJson).to.be.an('object').that.has.all.keys('return', 'success');
+                    expect(resJson.success).to.be.equal(true);
+                    expect(resJson.return).to.be.an('array');
+                    done();
+                });
+        });
+
+        it("should get books cached", done => {
             chai
                 .request(server)
                 .get("/books")

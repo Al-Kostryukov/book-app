@@ -3,19 +3,25 @@ const router = new Router();
 const bookGetController = require('./bookGetController');
 const bookAddController = require('./bookAddController');
 const bookModifyController = require('./bookModifyController');
-//koaBody = convert(KoaBody());
+const cacheManager = require('./cacheManager');
 
 router
     .get('/books', async (ctx, next) => {
-        // here we can cache request using Redis (for example) - can implement it later
-        ctx.body = await bookGetController.getBooks(ctx.query);
+        const cached = cacheManager.get(ctx.originalUrl);
+        if (cached) {
+            ctx.body = cached;
+        } else {
+            ctx.body = await bookGetController.getBooks(ctx.query);
+            cacheManager.set(ctx.originalUrl, ctx.body);
+        }
     })
     .post('/add', async (ctx, next) => {
+        cacheManager.invalidate();
         ctx.body = await bookAddController.addBook(ctx.request.body, ctx.request.files.image);
     })
     .post('/modify', async (ctx, next) => {
+        cacheManager.invalidate();
         ctx.body = await bookModifyController.modifyBook(ctx.request.body, ctx.request.files.image);
     });
 
 module.exports = { router };
-
